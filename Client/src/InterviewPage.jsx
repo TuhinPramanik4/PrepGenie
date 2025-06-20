@@ -1,3 +1,4 @@
+// === FRONTEND: InterviewPage.jsx ===
 import React, { useState } from 'react';
 import axios from 'axios';
 
@@ -28,9 +29,11 @@ const InterviewPage = () => {
         question: questions[currentIndex],
         answer: transcript,
         resumeText,
-        company
+        company,
+        resumeId
       });
       setFeedback(aiRes.data.feedback);
+      speak(aiRes.data.feedback);
     };
     recognition.start();
   };
