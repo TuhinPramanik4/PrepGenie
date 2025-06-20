@@ -5,6 +5,30 @@ const Interview = require('../models/Interview'); // ✅ Import model
 
 const router = express.Router();
 
+router.post('/evaluate-answer', async (req, res) => {
+  const { question, answer, company, resumeText } = req.body;
+
+  const prompt = `You are an AI interviewer.
+Here is a candidate's answer to a question.
+Question: ${question}
+Answer: ${answer}
+Resume context: ${resumeText}
+Company: ${company}
+Give 3 bullet points of feedback for improvement.`;
+
+  try {
+    const result = await axios.post(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      { contents: [{ parts: [{ text: prompt }] }] }
+    );
+    const feedback = result.data.candidates[0].content.parts[0].text;
+    res.json({ feedback });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Feedback generation failed' });
+  }
+});
+
 router.post('/interview-questions', async (req, res) => {
   const { resumeText, company, resumeId } = req.body;
 
