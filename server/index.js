@@ -2,7 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
-
+const ttsRoute = require('./routes/tts');
 dotenv.config();
 
 const app = express();
@@ -24,6 +24,7 @@ const aiRoute = require('./routes/ai');
 
 app.use('/upload', uploadRoute);
 app.use('/ai', aiRoute);
+app.use('/tts', ttsRoute);
 
 app.get('/', (req, res) => res.send('AI Interview Platform API Running'));
 
