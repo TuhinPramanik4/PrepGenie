@@ -31,7 +31,6 @@ export default function AIInterviewPage() {
   const [isThinking, setIsThinking] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
   const videoRef = useRef(null);
   const [searchParams] = useSearchParams();
   const interviewId = searchParams.get("interviewId");
@@ -92,7 +91,7 @@ export default function AIInterviewPage() {
 
   const speakText = async (text) => {
     try {
-      const res = await fetch("https://api.elevenlabs.io/v1/text-to-speech/21m00Tcm4TlvDq8ikWAM", {
+      const res = await fetch("https://api.elevenlabs.io/v1/text-to-speech/EXAVITQu4vr4xnSDxMaL", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -112,6 +111,11 @@ export default function AIInterviewPage() {
       const audioBlob = await res.blob();
       const audioUrl = URL.createObjectURL(audioBlob);
       const audio = new Audio(audioUrl);
+
+      audio.onended = () => {
+        startListening();
+      };
+
       await audio.play();
     } catch (err) {
       console.error("TTS Error:", err);
@@ -123,11 +127,29 @@ export default function AIInterviewPage() {
     recognition.lang = "en-US";
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
+
     recognition.onresult = (event) => {
       const speech = event.results[0][0].transcript;
       setUserResponse(speech);
+
+      const lowerSpeech = speech.toLowerCase();
+      if (lowerSpeech.includes("repeat") || lowerSpeech.includes("again")) {
+        speakText(questions[currentQuestion]?.question);
+        return;
+      }
+      if (
+        lowerSpeech.includes("don't know") ||
+        lowerSpeech.includes("do not know") ||
+        lowerSpeech.includes("skip") ||
+        lowerSpeech.includes("no idea")
+      ) {
+        handleNextQuestion();
+        return;
+      }
+
       generateFeedback(speech);
     };
+
     recognition.onerror = (e) => console.error("Speech error:", e);
     recognition.start();
   };
