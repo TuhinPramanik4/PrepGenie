@@ -35,8 +35,8 @@ export default function AIInterviewPage() {
   const videoRef = useRef(null);
   const [searchParams] = useSearchParams();
   const interviewId = searchParams.get("interviewId");
+  const ELEVENLABS_API_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY;
 
-  // Fetch questions on mount
   useEffect(() => {
     const fetchInterview = async () => {
       try {
@@ -50,7 +50,6 @@ export default function AIInterviewPage() {
         setLoading(false);
       }
     };
-
     if (interviewId) fetchInterview();
   }, [interviewId]);
 
@@ -91,18 +90,77 @@ export default function AIInterviewPage() {
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
+  const speakText = async (text) => {
+    try {
+      const res = await fetch("https://api.elevenlabs.io/v1/text-to-speech/default", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "xi-api-key": ELEVENLABS_API_KEY,
+        },
+        body: JSON.stringify({
+          text,
+          model_id: "eleven_monolingual_v1",
+        }),
+      });
+      const audioBlob = await res.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+      const audio = new Audio(audioUrl);
+      await audio.play();
+    } catch (err) {
+      console.error("TTS Error:", err);
+    }
+  };
+
+  const startListening = () => {
+    const recognition = new window.webkitSpeechRecognition();
+    recognition.lang = "en-US";
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    recognition.onresult = (event) => {
+      const speech = event.results[0][0].transcript;
+      setUserResponse(speech);
+      generateFeedback(speech);
+    };
+    recognition.onerror = (e) => console.error("Speech error:", e);
+    recognition.start();
+  };
+
+  const generateFeedback = async (answer) => {
+    setIsThinking(true);
+    try {
+      const res = await fetch("http://localhost:5000/api/interview/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          question: questions[currentQuestion]?.question,
+          answer,
+        }),
+      });
+      const data = await res.json();
+      if (data.feedback) speakText(data.feedback);
+    } catch (err) {
+      console.error("Feedback error:", err);
+    } finally {
+      setIsThinking(false);
+    }
+  };
+
   const handleStartInterview = () => {
     setInterviewStarted(true);
     setIsRecording(true);
+    speakText(questions[0]?.question);
   };
 
   const handleNextQuestion = () => {
     setIsThinking(true);
     setTimeout(() => {
-      setCurrentQuestion((prev) => Math.min(prev + 1, questions.length - 1));
+      const next = Math.min(currentQuestion + 1, questions.length - 1);
+      setCurrentQuestion(next);
+      speakText(questions[next]?.question);
       setIsThinking(false);
       setUserResponse("");
-    }, 2000);
+    }, 1000);
   };
 
   const handleEndInterview = () => {
@@ -276,6 +334,11 @@ export default function AIInterviewPage() {
           </div>
         </div>
       </div>
+      {interviewStarted && (
+        <Button onClick={startListening} className="w-full mt-4 bg-blue-600 text-white">
+          🎙️ Start Answering
+        </Button>
+      )}
     </div>
   );
 }
