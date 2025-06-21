@@ -18,6 +18,32 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
+// routes/interview.js
+router.post("/feedback", async (req, res) => {
+  try {
+    const { question, answer } = req.body;
+
+    const prompt = `
+You are an AI interviewer. Provide constructive feedback for the following answer.
+
+Question: ${question}
+Answer: ${answer}
+
+Give short, clear feedback within 2–3 lines.
+`;
+
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const result = await model.generateContent(prompt);
+    const text = await result.response.text();
+
+    res.json({ feedback: text.trim() });
+  } catch (err) {
+    console.error("Feedback error:", err);
+    res.status(500).json({ error: "Failed to generate feedback" });
+  }
+});
+
+
 // POST /api/interview/start
 router.post("/start", upload.single("resume"), async (req, res) => {
   try {

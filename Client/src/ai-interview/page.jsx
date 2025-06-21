@@ -92,7 +92,7 @@ export default function AIInterviewPage() {
 
   const speakText = async (text) => {
     try {
-      const res = await fetch("https://api.elevenlabs.io/v1/text-to-speech/default", {
+      const res = await fetch("https://api.elevenlabs.io/v1/text-to-speech/21m00Tcm4TlvDq8ikWAM", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -103,6 +103,12 @@ export default function AIInterviewPage() {
           model_id: "eleven_monolingual_v1",
         }),
       });
+
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(`TTS request failed: ${errText}`);
+      }
+
       const audioBlob = await res.blob();
       const audioUrl = URL.createObjectURL(audioBlob);
       const audio = new Audio(audioUrl);
