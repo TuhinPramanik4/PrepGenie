@@ -2,6 +2,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { useNavigate } from "react-router-dom";
 import {
   Bell,
   ChevronDown,
@@ -32,6 +33,7 @@ import {
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("home")
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+   const navigate = useNavigate();
 
   const stats = [
     { label: "Interviews Completed", value: "12", icon: Target, color: "text-black", bgColor: "bg-gray-100" },
@@ -216,14 +218,14 @@ export default function Dashboard() {
                 interview.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button 
-                  onClick={() => handleNavigation("/interview")}
-                  className="bg-black hover:bg-gray-800 text-white px-8 py-3 text-lg shadow-lg"
-                  size="lg"
-                >
-                  <Brain className="mr-2 h-5 w-5" />
-                  Start AI Interview
-                </Button>
+                 <Button
+      onClick={() => navigate("/interview")}
+      className="bg-black hover:bg-gray-800 text-white px-8 py-3 text-lg shadow-lg"
+      size="lg"
+    >
+      <Brain className="mr-2 h-5 w-5" />
+      Start AI Interview
+    </Button>
                 <Button
                   variant="outline"
                   size="lg"

@@ -1,85 +1,96 @@
-const express = require('express');
-const multer = require('multer');
-const axios = require('axios');
-const fs = require('fs');
-const path = require('path');
-const Interview = require('../models/Interview');
-
+const express = require("express");
+const multer = require("multer");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+const fs = require("fs");
+const path = require("path");
+const Interview = require("../models/Interview");
+require("dotenv").config();
 const router = express.Router();
 
-// Multer setup
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+// Setup multer
 const storage = multer.diskStorage({
-  destination: './uploads',
+  destination: "./uploads",
   filename: (_, file, cb) => {
     cb(null, Date.now() + path.extname(file.originalname));
-  },
+  }
 });
 const upload = multer({ storage });
 
 // POST /api/interview/start
-router.post('/start', upload.single('resume'), async (req, res) => {
-  const { company, role, jobDescription } = req.body;
-  const resumePath = req.file?.path;
-
-  if (!resumePath || !role || !company) {
-    return res.status(400).json({ error: 'Missing required fields.' });
-  }
-
+router.post("/start", upload.single("resume"), async (req, res) => {
   try {
-    // Optional: Extract resume text from PDF
-    const resumeText = fs.readFileSync(resumePath, 'utf8');
+    const { company, customCompany, role, jobDescription } = req.body;
+    const resumePath = req.file ? `/uploads/${req.file.filename}` : "";
+    const resumeFilePath = req.file?.path;
 
-    // Generate questions using Gemini API (pseudo-code)
-    const response = await generateQuestionsWithAI(resumeText, company, role, jobDescription);
-    const questions = response.questions || [];
+    // Read resume text
+    const resumeText = resumeFilePath ? fs.readFileSync(resumeFilePath, "utf-8") : "";
 
-    const interview = new Interview({
-      company,
-      role,
-      jobDescription,
-      resumePath,
-      questions,
-    });
-
-    await interview.save();
-    res.json(interview);
-  } catch (error) {
-    console.error('Error:', error.message);
-    res.status(500).json({ error: 'Server error.' });
-  }
-});
-
-// Mock function: Replace with Gemini or OpenAI call
-async function generateQuestionsWithAI(resumeText, company, role, jobDescription) {
-  const API_KEY = process.env.GEMINI_API_KEY;
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
-
-  const prompt = `
-You are an AI interview assistant. Based on the following resume content and job details, generate 5 tailored interview questions.
-
-Company: ${company}
-Role: ${role}
-Job Description: ${jobDescription || "N/A"}
+    // Build prompt
+    const prompt = `
+You are an AI interviewer for ${customCompany || company}, hiring for the role of ${role}.
+Generate 5 personalized interview questions based on the following resume and job description.
 
 Resume:
 ${resumeText}
 
-Please provide only the list of questions in plain text.
+Job Description:
+${jobDescription || "N/A"}
+
+Return the questions in a JSON array like:
+[
+  { "category": "Technical", "question": "..." },
+  ...
+]
 `;
 
-  try {
-    const response = await axios.post(endpoint, {
-      contents: [{ parts: [{ text: prompt }] }],
+    // Call Gemini
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const result = await model.generateContent(prompt);
+    const response = await result.response.text();
+const cleaned = response
+  .replace(/```json/g, '')
+  .replace(/```/g, '')
+  .trim();
+
+const questions = JSON.parse(cleaned);
+
+    // Save interview
+    const interview = new Interview({
+      company,
+      customCompany,
+      role,
+      jobDescription,
+      resumePath,
+      questions
     });
 
-    const rawText = response.data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    const questions = rawText.split('\n').filter(line => line.trim());
+    await interview.save();
 
-    return { questions };
+    return res.status(200).json({
+      message: "Interview started",
+      interviewId: interview._id
+    });
   } catch (err) {
-    console.error('Gemini API error:', err.response?.data || err.message);
-    return { questions: [] };
+    console.error("Interview Error:", err);
+    return res.status(500).json({ error: "Failed to start interview" });
   }
-}
+});
+
+// GET /api/interview/:id
+router.get("/:id", async (req, res) => {
+  try {
+    const interview = await Interview.findById(req.params.id);
+    if (!interview) {
+      return res.status(404).json({ error: "Interview not found" });
+    }
+    res.json(interview);
+  } catch (err) {
+    console.error("Get Interview Error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
 
 module.exports = router;

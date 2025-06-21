@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -22,47 +23,36 @@ export default function AIInterviewPage() {
   const [isRecording, setIsRecording] = useState(false);
   const [isVideoOn, setIsVideoOn] = useState(true);
   const [isSpeakerOn, setIsSpeakerOn] = useState(true);
+  const [questions, setQuestions] = useState([]);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [timeElapsed, setTimeElapsed] = useState(0);
   const [interviewStarted, setInterviewStarted] = useState(false);
   const [userResponse, setUserResponse] = useState("");
   const [isThinking, setIsThinking] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const videoRef = useRef(null);
+  const [searchParams] = useSearchParams();
+  const interviewId = searchParams.get("interviewId");
 
-  const questions = [
-    {
-      id: 1,
-      question: "Tell me about yourself and why you're interested in this software engineering position.",
-      category: "Introduction",
-      expectedDuration: "2-3 minutes",
-    },
-    {
-      id: 2,
-      question: "Describe a challenging technical problem you've solved recently. Walk me through your approach.",
-      category: "Technical Experience",
-      expectedDuration: "3-4 minutes",
-    },
-    {
-      id: 3,
-      question:
-        "How do you handle working in a team environment, especially when there are conflicting opinions about technical decisions?",
-      category: "Behavioral",
-      expectedDuration: "2-3 minutes",
-    },
-    {
-      id: 4,
-      question: "What's your experience with our tech stack, and how would you approach learning new technologies?",
-      category: "Technical Skills",
-      expectedDuration: "2-3 minutes",
-    },
-    {
-      id: 5,
-      question: "Do you have any questions about the role or our company?",
-      category: "Closing",
-      expectedDuration: "2-3 minutes",
-    },
-  ];
+  // Fetch questions on mount
+  useEffect(() => {
+    const fetchInterview = async () => {
+      try {
+        const res = await fetch(`http://localhost:5000/api/interview/${interviewId}`);
+        const data = await res.json();
+        setQuestions(data.questions || []);
+        setLoading(false);
+      } catch (err) {
+        console.error("Error fetching interview:", err);
+        setError("Failed to load interview questions.");
+        setLoading(false);
+      }
+    };
+
+    if (interviewId) fetchInterview();
+  }, [interviewId]);
 
   useEffect(() => {
     let interval;
@@ -85,7 +75,7 @@ export default function AIInterviewPage() {
         })
         .catch((err) => {
           console.error("Camera access error:", err);
-          alert("Camera access blocked or not available. Please check your browser settings.");
+          alert("Camera access blocked or not available.");
         });
     }
     return () => {
@@ -121,10 +111,14 @@ export default function AIInterviewPage() {
     window.location.href = "/interview-results";
   };
 
-  const progress = ((currentQuestion + 1) / questions.length) * 100;
+  const progress = questions.length ? ((currentQuestion + 1) / questions.length) * 100 : 0;
+
+  if (loading) return <div className="p-6 text-center text-gray-600">⏳ Loading interview questions...</div>;
+  if (error) return <div className="p-6 text-center text-red-600">{error}</div>;
 
   return (
     <div className="min-h-screen bg-white">
+      {/* HEADER */}
       <div className="backdrop-blur-xl bg-white/70 border-b border-gray-200/50 shadow-lg px-4 py-3">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-4">
@@ -150,9 +144,12 @@ export default function AIInterviewPage() {
         </div>
       </div>
 
+      {/* MAIN CONTENT */}
       <div className="max-w-7xl mx-auto px-4 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* LEFT PANEL */}
           <div className="lg:col-span-2 space-y-6">
+            {/* PROGRESS */}
             <Card className="bg-white border-gray-200 shadow-lg">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-2">
@@ -163,17 +160,12 @@ export default function AIInterviewPage() {
               </CardContent>
             </Card>
 
+            {/* VIDEO STREAM */}
             <Card className="bg-white border-gray-200 shadow-lg">
               <CardContent className="p-0">
                 <div className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden">
                   {isVideoOn ? (
-                    <video
-                      ref={videoRef}
-                      autoPlay
-                      muted
-                      playsInline
-                      className="w-full h-full object-cover"
-                    />
+                    <video ref={videoRef} autoPlay muted playsInline className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
                       <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center">
@@ -181,14 +173,12 @@ export default function AIInterviewPage() {
                       </div>
                     </div>
                   )}
-
                   {isRecording && (
                     <div className="absolute top-4 left-4 flex items-center space-x-2 bg-black px-3 py-1 rounded-full shadow-lg">
                       <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
                       <span className="text-white text-sm font-medium">Recording</span>
                     </div>
                   )}
-
                   <div className="absolute top-4 right-4 w-20 h-20 bg-black rounded-full flex items-center justify-center shadow-xl">
                     <Brain className="h-10 w-10 text-white" />
                   </div>
@@ -196,36 +186,20 @@ export default function AIInterviewPage() {
               </CardContent>
             </Card>
 
+            {/* CONTROLS */}
             <Card className="bg-white border-gray-200 shadow-lg">
               <CardContent className="p-4">
                 <div className="flex items-center justify-center space-x-4">
-                  <Button
-                    onClick={() => setIsRecording(!isRecording)}
-                    className={`rounded-full w-14 h-14 border-2 ${
-                      isRecording ? "bg-black text-white" : "bg-white text-gray-700"
-                    }`}
-                  >
+                  <Button onClick={() => setIsRecording(!isRecording)} className={`rounded-full w-14 h-14 border-2 ${isRecording ? "bg-black text-white" : "bg-white text-gray-700"}`}>
                     {isRecording ? <Mic className="h-6 w-6" /> : <MicOff className="h-6 w-6" />}
                   </Button>
-                  <Button
-                    onClick={() => setIsVideoOn(!isVideoOn)}
-                    className={`rounded-full w-14 h-14 border-2 ${
-                      isVideoOn ? "bg-white text-gray-700" : "bg-black text-white"
-                    }`}
-                  >
+                  <Button onClick={() => setIsVideoOn(!isVideoOn)} className={`rounded-full w-14 h-14 border-2 ${isVideoOn ? "bg-white text-gray-700" : "bg-black text-white"}`}>
                     {isVideoOn ? <Video className="h-6 w-6" /> : <VideoOff className="h-6 w-6" />}
                   </Button>
-                  <Button
-                    onClick={() => setIsSpeakerOn(!isSpeakerOn)}
-                    className="rounded-full w-14 h-14 border-2 bg-white text-gray-700"
-                  >
+                  <Button onClick={() => setIsSpeakerOn(!isSpeakerOn)} className="rounded-full w-14 h-14 border-2 bg-white text-gray-700">
                     {isSpeakerOn ? <Volume2 className="h-6 w-6" /> : <VolumeX className="h-6 w-6" />}
                   </Button>
-                  <Button
-                    variant="destructive"
-                    onClick={handleEndInterview}
-                    className="rounded-full w-14 h-14 bg-black text-white"
-                  >
+                  <Button variant="destructive" onClick={handleEndInterview} className="rounded-full w-14 h-14 bg-black text-white">
                     <Phone className="h-6 w-6 rotate-[135deg]" />
                   </Button>
                 </div>
@@ -233,7 +207,9 @@ export default function AIInterviewPage() {
             </Card>
           </div>
 
+          {/* RIGHT PANEL */}
           <div className="space-y-6">
+            {/* CURRENT QUESTION */}
             <Card className="bg-white border-gray-200 shadow-lg">
               <CardHeader>
                 <CardTitle className="text-black flex items-center">
@@ -253,14 +229,13 @@ export default function AIInterviewPage() {
                 ) : (
                   <>
                     <p className="text-black mb-4 leading-relaxed">{questions[currentQuestion]?.question}</p>
-                    <div className="text-sm text-gray-600">
-                      Expected duration: {questions[currentQuestion]?.expectedDuration}
-                    </div>
+                    <div className="text-sm text-gray-600">Expected duration: 2–3 minutes</div>
                   </>
                 )}
               </CardContent>
             </Card>
 
+            {/* TIPS */}
             <Card className="bg-white border-gray-200 shadow-lg">
               <CardHeader>
                 <CardTitle className="text-black flex items-center">
@@ -281,6 +256,7 @@ export default function AIInterviewPage() {
               </CardContent>
             </Card>
 
+            {/* ACTION BUTTONS */}
             <div className="space-y-3">
               {!interviewStarted ? (
                 <Button onClick={handleStartInterview} className="w-full bg-black text-white">
@@ -288,11 +264,7 @@ export default function AIInterviewPage() {
                 </Button>
               ) : (
                 <>
-                  <Button
-                    onClick={handleNextQuestion}
-                    disabled={currentQuestion >= questions.length - 1 || isThinking}
-                    className="w-full bg-black text-white"
-                  >
+                  <Button onClick={handleNextQuestion} disabled={currentQuestion >= questions.length - 1 || isThinking} className="w-full bg-black text-white">
                     Next Question <ChevronRight className="ml-2 h-4 w-4" />
                   </Button>
                   <Button onClick={handleEndInterview} variant="outline" className="w-full text-black">

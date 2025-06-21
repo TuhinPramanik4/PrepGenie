@@ -62,12 +62,34 @@ export default function InterviewPage() {
     }
   }
 
-  const handleStartInterview = () => {
-    if (resumeFile && selectedRole && (selectedCompany || customCompany)) {
-      setShowResumeModal(false)
-      window.location.href = "/ai-interview"
+ const handleStartInterview = async () => {
+  if (!resumeFile || !selectedRole || !(selectedCompany || customCompany)) return;
+
+  const formData = new FormData();
+  formData.append("resume", resumeFile);
+  formData.append("company", selectedCompany);
+  formData.append("customCompany", customCompany);
+  formData.append("role", selectedRole);
+  formData.append("jobDescription", jobDescription);
+
+  try {
+    const res = await fetch("http://localhost:5000/api/interview/start", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      window.location.href = `/ai-interview?interviewId=${data.interviewId}`;
+    } else {
+      alert(data.error || "Failed to start interview");
     }
+  } catch (err) {
+    console.error("Interview error:", err);
+    alert("Something went wrong");
   }
+};
+
 
   const topCompanies = [
     { id: "google", name: "Google", logo: "🔍", color: "hover:bg-gray-50 hover:border-gray-300" },
