@@ -164,7 +164,7 @@ export default function AIInterviewPage() {
   const generateFeedback = async (answer) => {
     setIsThinking(true);
     try {
-      const res = await fetch("http://localhost:5000/api/interview/feedback", {
+      const res = await fetch(`${import.meta.env.backend_route}/api/interview/feedback`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
