@@ -1,14 +1,12 @@
-// models/Interview.js
 const mongoose = require('mongoose');
 
-const interviewSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  resumeId: { type: mongoose.Schema.Types.ObjectId, ref: 'Resume' },
+const InterviewSchema = new mongoose.Schema({
   company: String,
+  role: String,
+  jobDescription: String,
+  resumePath: String,
   questions: [String],
-  answers: [String], // Optional - if you’re collecting answers
-  feedback: [String], // Optional - Gemini-generated feedback
   createdAt: { type: Date, default: Date.now },
 });
 
-module.exports = mongoose.model('Interview', interviewSchema);
+module.exports = mongoose.model('Interview', InterviewSchema);

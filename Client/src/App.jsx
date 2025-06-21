@@ -7,7 +7,7 @@ import LandingPage from './page'
 function App() {
   return (
     <div>
-      <Dashboard />
+      <InterviewPage />
     </div>
   )
 }
