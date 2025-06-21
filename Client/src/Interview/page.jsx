@@ -74,7 +74,7 @@ export default function InterviewPage() {
     formData.append("jobDescription", jobDescription);
 
     try {
-      const res = await fetch(`${import.meta.env.backend_route}/api/interview/start`, {
+      const res = await fetch(`${import.meta.env.VITE_BACKEND_ROUTE}/api/interview/start`, {
         method: "POST",
         body: formData,
       });
