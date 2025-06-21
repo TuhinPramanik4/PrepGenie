@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {  UserButton } from '@civic/auth/react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
@@ -29,6 +30,8 @@ import {
   X,
   Sparkles,
 } from "lucide-react";
+
+
 
 export default function LandingPage() {
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -227,13 +230,7 @@ export default function LandingPage() {
 
             {/* Auth Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
-              <Button
-                onClick={() => setShowAuthModal(true)}
-                className="group bg-black hover:bg-gray-800 text-white px-8 py-4 text-lg rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
-              >
-                Join for free
-                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-              </Button>
+              <UserButton />
               <Button
                 variant="outline"
                 className="group border-2 border-gray-300 text-black hover:bg-gray-50 hover:border-black px-8 py-4 text-lg rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
