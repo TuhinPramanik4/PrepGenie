@@ -80,10 +80,16 @@ export default function Dashboard() {
             {/* Left side */}
             <div className="flex items-center space-x-8">
               <button onClick={() => handleNavigation("/")} className="flex items-center">
-                <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center shadow-lg">
-                  <span className="text-white font-bold text-lg">JP</span>
+                <div className="w-13 h-13 bg-black rounded-lg flex items-center justify-center shadow-lg">
+                   <img 
+              src="/images/h4b_logo2.jpg" 
+              alt="PrepGenie logo" 
+              width={45} 
+              height={45} 
+              className="rounded-lg" 
+            />
                 </div>
-                <span className="ml-3 text-black font-semibold text-xl">JobPrep</span>
+                <span className="ml-3 text-black font-semibold text-xl">PrepGenie</span>
               </button>
 
               <div className="hidden md:flex items-center space-x-6">

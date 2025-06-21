@@ -44,6 +44,7 @@ export default function InterviewPage() {
   const [selectedCompany, setSelectedCompany] = useState("")
   const [customCompany, setCustomCompany] = useState("")
   const [selectedRole, setSelectedRole] = useState("")
+  const [selectedExperience, setSelectedExperience] = useState("")
   const [resumeFile, setResumeFile] = useState(null)
   const [jobDescription, setJobDescription] = useState("")
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -62,50 +63,49 @@ export default function InterviewPage() {
     }
   }
 
- const handleStartInterview = async () => {
-  if (!resumeFile || !selectedRole || !(selectedCompany || customCompany)) return;
+  const handleStartInterview = async () => {
+    if (!resumeFile || !selectedRole || !(selectedCompany || customCompany)) return;
 
-  const formData = new FormData();
-  formData.append("resume", resumeFile);
-  formData.append("company", selectedCompany);
-  formData.append("customCompany", customCompany);
-  formData.append("role", selectedRole);
-  formData.append("jobDescription", jobDescription);
+    const formData = new FormData();
+    formData.append("resume", resumeFile);
+    formData.append("company", selectedCompany);
+    formData.append("customCompany", customCompany);
+    formData.append("role", selectedRole);
+    formData.append("jobDescription", jobDescription);
 
-  try {
-    const res = await fetch("http://localhost:5000/api/interview/start", {
-      method: "POST",
-      body: formData,
-    });
+    try {
+      const res = await fetch("http://localhost:5000/api/interview/start", {
+        method: "POST",
+        body: formData,
+      });
 
-    const data = await res.json();
-    if (res.ok) {
-      window.location.href = `/ai-interview?interviewId=${data.interviewId}`;
-    } else {
-      alert(data.error || "Failed to start interview");
+      const data = await res.json();
+      if (res.ok) {
+        window.location.href = `/ai-interview?interviewId=${data.interviewId}`;
+      } else {
+        alert(data.error || "Failed to start interview");
+      }
+    } catch (err) {
+      console.error("Interview error:", err);
+      alert("Something went wrong");
     }
-  } catch (err) {
-    console.error("Interview error:", err);
-    alert("Something went wrong");
-  }
-};
+  };
 
 
   const topCompanies = [
-    { id: "google", name: "Google", logo: "🔍", color: "hover:bg-gray-50 hover:border-gray-300" },
-    { id: "meta", name: "Meta", logo: "📘", color: "hover:bg-gray-50 hover:border-gray-300" },
-    { id: "amazon", name: "Amazon", logo: "📦", color: "hover:bg-gray-50 hover:border-gray-300" },
-    { id: "apple", name: "Apple", logo: "🍎", color: "hover:bg-gray-50 hover:border-gray-300" },
-    { id: "microsoft", name: "Microsoft", logo: "🪟", color: "hover:bg-gray-50 hover:border-gray-300" },
-    { id: "netflix", name: "Netflix", logo: "🎬", color: "hover:bg-gray-50 hover:border-gray-300" },
-    { id: "tesla", name: "Tesla", logo: "⚡", color: "hover:bg-gray-50 hover:border-gray-300" },
-    { id: "uber", name: "Uber", logo: "🚗", color: "hover:bg-gray-50 hover:border-gray-300" },
-    { id: "airbnb", name: "Airbnb", logo: "🏠", color: "hover:bg-gray-50 hover:border-gray-300" },
-    { id: "spotify", name: "Spotify", logo: "🎵", color: "hover:bg-gray-50 hover:border-gray-300" },
-    { id: "linkedin", name: "LinkedIn", logo: "💼", color: "hover:bg-gray-50 hover:border-gray-300" },
-    { id: "salesforce", name: "Salesforce", logo: "☁️", color: "hover:bg-gray-50 hover:border-gray-300" },
+    { id: "google", name: "Google", color: "hover:bg-gray-50 hover:border-gray-300" },
+    { id: "meta", name: "Meta", color: "hover:bg-gray-50 hover:border-gray-300" },
+    { id: "amazon", name: "Amazon", color: "hover:bg-gray-50 hover:border-gray-300" },
+    { id: "apple", name: "Apple", color: "hover:bg-gray-50 hover:border-gray-300" },
+    { id: "microsoft", name: "Microsoft", color: "hover:bg-gray-50 hover:border-gray-300" },
+    { id: "netflix", name: "Netflix", color: "hover:bg-gray-50 hover:border-gray-300" },
+    { id: "tesla", name: "Tesla", color: "hover:bg-gray-50 hover:border-gray-300" },
+    { id: "uber", name: "Uber", color: "hover:bg-gray-50 hover:border-gray-300" },
+    { id: "airbnb", name: "Airbnb", color: "hover:bg-gray-50 hover:border-gray-300" },
+    { id: "spotify", name: "Spotify", color: "hover:bg-gray-50 hover:border-gray-300" },
+    { id: "linkedin", name: "LinkedIn", color: "hover:bg-gray-50 hover:border-gray-300" },
+    { id: "salesforce", name: "Salesforce", color: "hover:bg-gray-50 hover:border-gray-300" },
   ]
-
   const interviewTypes = [
     {
       id: "technical",
@@ -149,10 +149,16 @@ export default function InterviewPage() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-8">
               <Link to="/dashboard" className="flex items-center">
-                <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center shadow-lg">
-                  <span className="text-white font-bold text-lg">JP</span>
+                <div className="w-13 h-13 bg-black rounded-lg flex items-center justify-center shadow-lg">
+                  <img
+                    src="/images/h4b_logo2.jpg"
+                    alt="PrepGenie logo"
+                    width={45}
+                    height={45}
+                    className="rounded-lg"
+                  />
                 </div>
-                <span className="ml-3 text-black font-semibold text-xl">JobPrep</span>
+                <span className="ml-3 text-black font-semibold text-xl">PrepGenie</span>
               </Link>
 
               <div className="hidden md:flex items-center space-x-6">
@@ -297,19 +303,18 @@ export default function InterviewPage() {
             {/* Popular Companies Grid */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-black">Popular Companies</h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+              <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
                 {topCompanies.map((company) => (
                   <button
                     key={company.id}
                     onClick={() => setSelectedCompany(company.id)}
-                    className={`p-4 rounded-lg border-2 transition-all duration-200 ${
-                      selectedCompany === company.id
-                        ? "border-black bg-gray-100 shadow-lg"
-                        : `border-gray-200 bg-white ${company.color} shadow-sm`
-                    }`}
+                    className={`p-2 rounded-lg border-2 transition-all duration-200 text-center ${selectedCompany === company.id
+                      ? "border-black bg-gray-100 shadow-lg"
+                      : `border-gray-200 bg-white ${company.color} shadow-sm`
+                      }`}
                   >
                     <div className="text-2xl mb-2">{company.logo}</div>
-                    <div className="text-sm text-black font-medium">{company.name}</div>
+                    <div className="text-xs text-black font-medium leading-tight">{company.name}</div>
                   </button>
                 ))}
               </div>
@@ -357,36 +362,35 @@ export default function InterviewPage() {
 
       {/* Resume Upload Modal */}
       <Dialog open={showResumeModal} onOpenChange={setShowResumeModal}>
-        <DialogContent className="bg-white border-gray-200 text-black max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold flex items-center">
-              <FileText className="mr-2 h-6 w-6 text-black" />
+        <DialogContent className="bg-white border-gray-200 text-black max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader className="pb-4">
+            <DialogTitle className="text-xl font-bold flex items-center">
+              <FileText className="mr-2 h-5 w-5 text-black" />
               Submit Your Resume
             </DialogTitle>
-            <DialogDescription className="text-gray-600">
+            <DialogDescription className="text-sm text-gray-600">
               Upload your resume and provide job details for{" "}
               {selectedCompany ? topCompanies.find((c) => c.id === selectedCompany)?.name : customCompany}
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-6 py-4">
-            {/* Selected Company Display */}
-            <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-              <div className="flex items-center space-x-3">
-                <Building className="h-5 w-5 text-black" />
-                <span className="text-black font-medium">
-                  Target Company:{" "}
+          <div className="space-y-4 py-2">
+            {/* Selected Company Display - Compact */}
+            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border">
+              <div className="w-6 h-6 bg-black rounded flex items-center justify-center">
+                <Building className="h-3 w-3 text-white" />
+              </div>
+              <div className="text-sm">
+                <span className="text-gray-600">Target:</span>
+                <span className="ml-1 font-semibold text-black">
                   {selectedCompany ? topCompanies.find((c) => c.id === selectedCompany)?.name : customCompany}
                 </span>
               </div>
             </div>
-
             {/* Resume Upload */}
             <div className="space-y-2">
-              <Label htmlFor="resume" className="text-gray-700 font-medium">
-                Resume/CV
-              </Label>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-black transition-colors bg-gray-50">
+              <Label className="text-sm font-semibold text-gray-800">Resume/CV</Label>
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-black transition-colors bg-gray-50">
                 <input
                   id="resume"
                   type="file"
@@ -395,72 +399,84 @@ export default function InterviewPage() {
                   className="hidden"
                 />
                 <label htmlFor="resume" className="cursor-pointer">
-                  <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-700 mb-2 font-medium">
-                    {resumeFile ? resumeFile.name : "Click to upload your resume"}
+                  <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                  <p className="text-sm font-medium text-gray-700 mb-1">
+                    {resumeFile ? resumeFile.name : "Click to upload resume"}
                   </p>
-                  <p className="text-sm text-gray-500">PDF, DOC, or DOCX (Max 10MB)</p>
+                  <p className="text-xs text-gray-500">PDF, DOC, DOCX (Max 10MB)</p>
                 </label>
               </div>
             </div>
 
-            {/* Job Role Selection */}
-            <div className="space-y-2">
-              <Label htmlFor="role" className="text-gray-700 font-medium">
-                Target Job Role
-              </Label>
-              <Select value={selectedRole} onValueChange={setSelectedRole}>
-                <SelectTrigger className="bg-white border-gray-300 text-black focus:border-black focus:ring-black">
-                  <SelectValue placeholder="Select the role you're interviewing for" />
-                </SelectTrigger>
-                <SelectContent className="bg-white border-gray-200 shadow-xl">
-                  <SelectItem value="software-engineer">Software Engineer</SelectItem>
-                  <SelectItem value="senior-software-engineer">Senior Software Engineer</SelectItem>
-                  <SelectItem value="product-manager">Product Manager</SelectItem>
-                  <SelectItem value="data-scientist">Data Scientist</SelectItem>
-                  <SelectItem value="ui-ux-designer">UI/UX Designer</SelectItem>
-                  <SelectItem value="marketing-manager">Marketing Manager</SelectItem>
-                  <SelectItem value="business-analyst">Business Analyst</SelectItem>
-                  <SelectItem value="devops-engineer">DevOps Engineer</SelectItem>
-                  <SelectItem value="frontend-developer">Frontend Developer</SelectItem>
-                  <SelectItem value="backend-developer">Backend Developer</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold text-gray-800">Job Role</Label>
+                <Select value={selectedRole} onValueChange={setSelectedRole}>
+                  <SelectTrigger className="h-9 bg-white border-2 border-gray-300 text-gray-900 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-200">
+                    <SelectValue placeholder="Select role" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border border-gray-300 shadow-lg">
+                    <SelectItem value="software-engineer">Software Engineer</SelectItem>
+                    <SelectItem value="senior-software-engineer">Senior Software Engineer</SelectItem>
+                    <SelectItem value="product-manager">Product Manager</SelectItem>
+                    <SelectItem value="data-scientist">Data Scientist</SelectItem>
+                    <SelectItem value="ui-ux-designer">UI/UX Designer</SelectItem>
+                    <SelectItem value="marketing-manager">Marketing Manager</SelectItem>
+                    <SelectItem value="business-analyst">Business Analyst</SelectItem>
+                    <SelectItem value="devops-engineer">DevOps Engineer</SelectItem>
+                    <SelectItem value="frontend-developer">Frontend Developer</SelectItem>
+                    <SelectItem value="backend-developer">Backend Developer</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold text-gray-800">Experience</Label>
+                <Select value={selectedExperience} onValueChange={setSelectedExperience}>
+                  <SelectTrigger className="h-9 bg-white border-2 border-gray-300 text-gray-900 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-200">
+                    <SelectValue placeholder="Select exp." />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border border-gray-300 shadow-lg">
+                    <SelectItem value="fresher">Fresher</SelectItem>
+                    <SelectItem value="0-1-year">0–1 Year</SelectItem>
+                    <SelectItem value="1-3-years">1–3 Years</SelectItem>
+                    <SelectItem value="3-5-years">3–5 Years</SelectItem>
+                    <SelectItem value="5-plus-years">5+ Years</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
             {/* Job Description */}
             <div className="space-y-2">
-              <Label htmlFor="job-description" className="text-gray-700 font-medium">
-                Job Description (Optional)
+              <Label className="text-sm font-semibold text-gray-800">
+                Job Description <span className="text-gray-500 font-normal text-xs">(Optional)</span>
               </Label>
               <Textarea
-                id="job-description"
-                placeholder="Paste the job description here to get more targeted interview questions..."
+                placeholder="Paste job description for targeted questions..."
                 value={jobDescription}
                 onChange={(e) => setJobDescription(e.target.value)}
-                className="bg-white border-gray-300 text-black placeholder:text-gray-400 focus:border-black focus:ring-black min-h-[120px]"
+                className="bg-white border-2 border-gray-300 text-gray-900 text-sm placeholder:text-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-200 min-h-[60px] resize-none"
               />
             </div>
-
             {/* Action Buttons */}
-            <div className="flex justify-between pt-4">
+            <div className="flex justify-between pt-3 border-t border-gray-200">
               <Button
                 variant="outline"
                 onClick={() => {
                   setShowResumeModal(false)
                   setShowCompanyModal(true)
                 }}
-                className="border-gray-300 text-black hover:bg-gray-50 hover:text-black"
+                className="h-9 px-4 border-gray-300 text-gray-700 hover:bg-gray-50 text-sm"
               >
                 Back
               </Button>
               <Button
                 onClick={handleStartInterview}
                 disabled={!resumeFile || !selectedRole}
-                className="bg-black hover:bg-gray-800 text-white shadow-lg"
+                className="h-9 px-6 bg-black hover:bg-gray-800 text-white text-sm font-medium"
               >
-                <Briefcase className="mr-2 h-4 w-4" />
+                <Briefcase className="mr-1 h-3 w-3" />
                 Start Interview
               </Button>
             </div>

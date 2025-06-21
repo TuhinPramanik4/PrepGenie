@@ -92,8 +92,14 @@ export default function InterviewResultsPage() {
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <Link to="/dashboard" className="flex items-center">
-              <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center shadow-lg">
-                <span className="text-white font-bold text-sm">JP</span>
+              <div className="w-13 h-13 bg-black rounded-lg flex items-center justify-center shadow-lg">
+                  <img 
+              src="/images/h4b_logo2.jpg" 
+              alt="PrepGenie logo" 
+              width={45} 
+              height={45} 
+              className="rounded-lg" 
+            />
               </div>
             </Link>
             <div className="flex items-center space-x-2">
