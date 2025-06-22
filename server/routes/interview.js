@@ -144,8 +144,15 @@ Return the questions in a JSON array like:
  * Fetch interview by ID
  */
 router.get("/:id", async (req, res) => {
+  const { id } = req.params;
+
+  // Validate ObjectId format
+  if (!id || !id.match(/^[a-fA-F\d]{24}$/)) {
+    return res.status(400).json({ error: "Invalid interview ID format" });
+  }
+
   try {
-    const interview = await Interview.findById(req.params.id);
+    const interview = await Interview.findById(id);
     if (!interview) {
       return res.status(404).json({ error: "Interview not found" });
     }

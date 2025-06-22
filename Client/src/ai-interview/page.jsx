@@ -230,11 +230,13 @@ export default function AIInterviewPage() {
     }, 1000);
   };
 
-  const handleEndInterview = () => {
-    setInterviewStarted(false);
-    setIsRecording(false);
-    window.location.href = "/interview-results";
-  };
+const handleEndInterview = () => {
+  if (!interviewId || interviewId === "null") {
+    alert("Interview ID is missing. Results cannot be shown.");
+    return;
+  }
+  window.location.href = `/interview-results?interviewId=${interviewId}`;
+};
 
   const progress = questions.length
     ? ((currentQuestion + 1) / questions.length) * 100
