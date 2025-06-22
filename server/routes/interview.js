@@ -5,23 +5,36 @@ const fs = require("fs");
 const path = require("path");
 const Interview = require("../models/Interview");
 require("dotenv").config();
-const router = express.Router();
 
+const router = express.Router();
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// Setup multer
+// Ensure uploads directory exists
+const uploadDir = path.join(__dirname, "..", "uploads");
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir);
+}
+
+// Setup multer storage
 const storage = multer.diskStorage({
-  destination: "./uploads",
+  destination: uploadDir,
   filename: (_, file, cb) => {
     cb(null, Date.now() + path.extname(file.originalname));
   }
 });
 const upload = multer({ storage });
 
-// routes/interview.js
+/**
+ * POST /api/interview/feedback
+ * Provides feedback on a user's answer
+ */
 router.post("/feedback", async (req, res) => {
   try {
     const { question, answer } = req.body;
+
+    if (!question || !answer) {
+      return res.status(422).json({ error: "Question and answer are required" });
+    }
 
     const prompt = `
 You are an AI interviewer. Provide constructive feedback for the following answer.
@@ -30,7 +43,7 @@ Question: ${question}
 Answer: ${answer}
 
 Give short, clear feedback within 2–3 lines.
-`;
+    `;
 
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const result = await model.generateContent(prompt);
@@ -38,23 +51,39 @@ Give short, clear feedback within 2–3 lines.
 
     res.json({ feedback: text.trim() });
   } catch (err) {
-    console.error("Feedback error:", err);
+    console.error("Feedback Error:", err);
     res.status(500).json({ error: "Failed to generate feedback" });
   }
 });
 
-
-// POST /api/interview/start
+/**
+ * POST /api/interview/start
+ * Generates interview questions based on resume and job role
+ */
 router.post("/start", upload.single("resume"), async (req, res) => {
   try {
     const { company, customCompany, role, jobDescription } = req.body;
-    const resumePath = req.file ? `/uploads/${req.file.filename}` : "";
-    const resumeFilePath = req.file?.path;
+    const resumeFile = req.file;
 
-    // Read resume text
-    const resumeText = resumeFilePath ? fs.readFileSync(resumeFilePath, "utf-8") : "";
+    // Validate required fields
+    if (!resumeFile || (!company && !customCompany) || !role) {
+      return res.status(422).json({ error: "Missing required fields" });
+    }
 
-    // Build prompt
+    let resumeText = "";
+
+    // Attempt to read resume as text if it's a plain text file
+    try {
+      if (resumeFile.mimetype === "text/plain") {
+        resumeText = fs.readFileSync(resumeFile.path, "utf-8");
+      } else {
+        resumeText = `Resume file is of type ${resumeFile.mimetype}. Cannot extract text directly.`;
+      }
+    } catch (readErr) {
+      console.error("Error reading resume file:", readErr);
+      return res.status(500).json({ error: "Failed to read resume" });
+    }
+
     const prompt = `
 You are an AI interviewer for ${customCompany || company}, hiring for the role of ${role}.
 Generate 5 personalized interview questions based on the following resume and job description.
@@ -70,42 +99,50 @@ Return the questions in a JSON array like:
   { "category": "Technical", "question": "..." },
   ...
 ]
-`;
+    `;
 
-    // Call Gemini
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const result = await model.generateContent(prompt);
-    const response = await result.response.text();
-const cleaned = response
-  .replace(/```json/g, '')
-  .replace(/```/g, '')
-  .trim();
+    const responseText = await result.response.text();
 
-const questions = JSON.parse(cleaned);
+    const cleaned = responseText
+      .replace(/```json/g, "")
+      .replace(/```/g, "")
+      .trim();
 
-    // Save interview
+    let questions;
+    try {
+      questions = JSON.parse(cleaned);
+    } catch (jsonErr) {
+      console.error("Failed to parse Gemini output as JSON:", cleaned);
+      return res.status(500).json({ error: "Failed to parse AI response" });
+    }
+
     const interview = new Interview({
       company,
       customCompany,
       role,
       jobDescription,
-      resumePath,
-      questions
+      resumePath: `/uploads/${resumeFile.filename}`,
+      questions,
     });
 
     await interview.save();
 
-    return res.status(200).json({
+    res.status(200).json({
       message: "Interview started",
-      interviewId: interview._id
+      interviewId: interview._id,
     });
   } catch (err) {
-    console.error("Interview Error:", err);
-    return res.status(500).json({ error: "Failed to start interview" });
+    console.error("Interview Start Error:", err);
+    res.status(500).json({ error: "Server error during interview setup" });
   }
 });
 
-// GET /api/interview/:id
+/**
+ * GET /api/interview/:id
+ * Fetch interview by ID
+ */
 router.get("/:id", async (req, res) => {
   try {
     const interview = await Interview.findById(req.params.id);
@@ -115,7 +152,7 @@ router.get("/:id", async (req, res) => {
     res.json(interview);
   } catch (err) {
     console.error("Get Interview Error:", err);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: "Server error fetching interview" });
   }
 });
 

@@ -431,7 +431,7 @@ export default function InterviewPage() {
                 </Select>
               </div>
 
-              <div className="space-y-2">
+              {/* <div className="space-y-2">
                 <Label className="text-sm font-semibold text-gray-800">Experience</Label>
                 <Select value={selectedExperience} onValueChange={setSelectedExperience}>
                   <SelectTrigger className="h-9 bg-white border-2 border-gray-300 text-gray-900 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-200">
@@ -445,7 +445,7 @@ export default function InterviewPage() {
                     <SelectItem value="5-plus-years">5+ Years</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
+              </div> */}
             </div>
             {/* Job Description */}
             <div className="space-y-2">
