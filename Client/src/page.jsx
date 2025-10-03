@@ -83,32 +83,7 @@
       { number: "24/7", label: "AI Availability", icon: Brain },
     ];
 
-    const testimonials = [
-      {
-        name: "Sarah Chen",
-        role: "Software Engineer at Google",
-        content:
-          "JobPrep helped me land my dream job at Google. The AI feedback was incredibly detailed and actionable.",
-        avatar: "SC",
-        rating: 5,
-      },
-      {
-        name: "Michael Rodriguez",
-        role: "Product Manager at Meta",
-        content:
-          "The company-specific questions were spot on. I felt completely prepared for my Meta interview.",
-        avatar: "MR",
-        rating: 5,
-      },
-      {
-        name: "Emily Johnson",
-        role: "Data Scientist at Netflix",
-        content:
-          "The performance analytics helped me identify and improve my weak areas. Highly recommend!",
-        avatar: "EJ",
-        rating: 5,
-      },
-    ];
+   
 
     return <div>
       <div className="min-h-screen bg-white relative overflow-hidden">
@@ -171,12 +146,7 @@
                 >
                   How It Works
                 </a>
-                <a
-                  href="#testimonials"
-                  className="text-gray-700 hover:text-black transition-colors font-medium hover:scale-105 transform"
-                >
-                  Testimonials
-                </a>
+                
               </div>
 
               <div className="md:hidden">
@@ -199,9 +169,7 @@
                   <a href="#how-it-works" className="text-gray-700 hover:text-black transition-colors font-medium">
                     How It Works
                   </a>
-                  <a href="#testimonials" className="text-gray-700 hover:text-black transition-colors font-medium">
-                    Testimonials
-                  </a>
+                  
                 </div>
               </div>
             )}
@@ -227,13 +195,7 @@
               {/* Auth Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
                 <UserButton />
-                <Button
-                  variant="outline"
-                  className="group border-2 border-gray-300 text-black hover:bg-gray-50 hover:border-black px-8 py-4 text-lg rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-                >
-                  See our plans
-                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                </Button>
+                
               </div>
 
               {/* Animated Stats */}
@@ -377,42 +339,7 @@
           </div>
         </section>
 
-        {/* Testimonials */}
-        <section id="testimonials" className="py-20 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl lg:text-5xl font-bold text-black mb-6">Success Stories</h2>
-              <p className="text-xl text-gray-600">See how JobPrep helped others land their dream jobs</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {testimonials.map((testimonial, index) => (
-                <Card
-                  key={index}
-                  className="group backdrop-blur-xl bg-white/70 border border-gray-200/50 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
-                >
-                  <CardContent className="p-8">
-                    <div className="flex items-center mb-6">
-                      <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center mr-4 shadow-lg">
-                        <span className="text-white font-semibold text-sm">{testimonial.avatar}</span>
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-black">{testimonial.name}</h4>
-                        <p className="text-sm text-gray-600">{testimonial.role}</p>
-                      </div>
-                    </div>
-                    <div className="flex mb-4">
-                      {[...Array(testimonial.rating)].map((_, i) => (
-                        <Star key={i} className="h-4 w-4 text-black fill-current" />
-                      ))}
-                    </div>
-                    <p className="text-gray-700 leading-relaxed">"{testimonial.content}"</p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
+        
 
         {/* CTA Section */}
         <section className="py-20 bg-black relative overflow-hidden">
