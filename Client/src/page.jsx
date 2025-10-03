@@ -1,4 +1,5 @@
   import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
   import { Button } from "@/components/ui/button";
   import { Card, CardContent } from "@/components/ui/card";
   import { Input } from "@/components/ui/input";
@@ -34,6 +35,7 @@
 
 
   export default function LandingPage() {
+        const navigate = useNavigate();
     const [showAuthModal, setShowAuthModal] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -194,7 +196,7 @@
 
               {/* Auth Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
-                <UserButton />
+               <Button onClick={() => navigate("/dashboard")} className="bg-gray-600 hover:bg-gray-400 text-white px-8 py-4 rounded-lg">Sign In / Sign Up</Button>
                 
               </div>
 
